@@ -57,3 +57,73 @@ The parameter `imm` denotes a signed integer value represented by a fixed number
 #### System
 
 `ecall`: system call number is in `$a7`, parameters are in `$a0-$a2`, return value is in `$a0`.
+
+
+#### Syntax
+
+RISC-U Keywords: `lui`, `addi`, `add`, `sub`, `mul`, `divu`, `remu`, `sltu`, `ld`, `sd`, `beq`, `jal`, `jalr`, `ecall` ,`.quad`
+
+RISC-U Symbols: `,`, `(`, `)`, `hexnumber` , `integer`,`space`,`:` ,`[` ,`]` ,`.`
+
+with:
+
+```
+integer = digit{digit} .
+
+hexnumber = hexdigit{hexdigit} .
+```
+
+and:
+
+```
+hexdigit  = "0" | ... | "9" | "A" | ... | "F" .
+
+digit = digit  = "0" | ... | "9" .
+```
+
+RISC-U Grammar:
+```
+riscu = {code}{data} .
+
+code = {address ":" "space" instruction} .
+
+data = {address ":" "space" quad} .
+
+quad = ".quad" "space" address .
+
+instruction = lui | addi | add | sub | mul | divu | remu | sltu | ld | sd | beq | jal | jalr | ecall | nop .
+
+register = "$zero" | "$ra" | "$sp" | "$gp" | "$tp" | "$t0" | ... | "$t6" | "$fp" | "$s1" | ... | "$s11" | "$a0" | ... |  "$a7" .
+
+address = "0x" hexnumber .
+
+lui = "lui" "space" register "," address .
+
+addi = "addi" "space" register "," register "," register "," integer .
+
+add = "add" "space" register "," register "," register .
+
+sub = "sub" "space" register "," register "," register .
+
+mul = mul "space" register "," register "," register .
+
+divu = divu "space" register "," register "," register .
+
+remu = remu "space" register "," register "," register .
+
+sltu = sltu "space" register "," register "," register .
+
+ld = ld "space" register "," integer "(" register ")" .
+
+sd = sd "space" register "," integer "(" register ")" .
+
+beq = beq "space" register "," register "," integer "[" address "]" .
+
+jal = jal "space" register "," integer "[" address "]" .
+
+jalr = jalr "space" register "," integer "(" register ")" .
+
+ecall = ecall .
+
+nop = nop .
+```
