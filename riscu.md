@@ -85,11 +85,11 @@ RISC-U Grammar:
 ```
 riscu = {code}{data} .
 
-code = {address ":" "space" instruction} .
+code = {address ":" "space" instruction "\n"} .
 
-data = {address ":" "space" quad} .
+data = {address ":" "space" quad "\n"} .
 
-.quad = ".quad" "space" address "\n" .
+.quad = ".quad" "space" address .
 
 instruction = lui | addi | add | sub | mul | divu | remu | sltu | ld | sd | beq | jal | jalr | ecall | nop .
 
@@ -97,33 +97,33 @@ register = "$zero" | "$ra" | "$sp" | "$gp" | "$tp" | "$t0" | ... | "$t6" | "$fp"
 
 address = "0x" hexnumber .
 
-lui = "lui" "space" register "," address "\n" .
+lui = "lui" "space" register "," address .
 
-addi = "addi" "space" register "," register "," register "," integer "\n" .
+addi = "addi" "space" register "," register "," register "," integer .
 
-add = "add" "space" register "," register "," register "\n" .
+add = "add" "space" register "," register "," register .
 
-sub = "sub" "space" register "," register "," register "\n" .
+sub = "sub" "space" register "," register "," register .
 
-mul = "mul" "space" register "," register "," register "\n" .
+mul = "mul" "space" register "," register "," register .
 
-divu = "divu" "space" register "," register "," register "\n" .
+divu = "divu" "space" register "," register "," register .
 
-remu = "remu" "space" register "," register "," register "\n" .
+remu = "remu" "space" register "," register "," register .
 
-sltu = "sltu" "space" register "," register "," register "\n" .
+sltu = "sltu" "space" register "," register "," register .
 
-ld = "ld" "space" register "," integer "(" register ")" "\n" .
+ld = "ld" "space" register "," integer "(" register ")" .
 
-sd = "sd" "space" register "," integer "(" register ")" "\n" .
+sd = "sd" "space" register "," integer "(" register ")" .
 
-beq = "beq" "space" register "," register "," integer "[" address "]" "\n" .
+beq = "beq" "space" register "," register "," integer "[" address "]" .
 
-jal = "jal" "space" register "," integer "[" address "]" "\n" .
+jal = "jal" "space" register "," integer "[" address "]" .
 
-jalr = "jalr" "space" register "," integer "(" register ")" "\n" .
+jalr = "jalr" "space" register "," integer "(" register ")" .
 
-ecall = "ecall" "\n" .
+ecall = "ecall"  .
 
-nop = "nop" "\n" .
+nop = "nop" .
 ```
