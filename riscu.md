@@ -63,7 +63,7 @@ The parameter `imm` denotes a signed integer value represented by a fixed number
 
 RISC-U Keywords: `lui`, `addi`, `add`, `sub`, `mul`, `divu`, `remu`, `sltu`, `ld`, `sd`, `beq`, `jal`, `jalr`, `ecall` ,`.quad`
 
-RISC-U Symbols: `,`, `(`, `)`, `hexnumber` , `integer`,`space`,`:` ,`[` ,`]` ,`.`
+RISC-U Symbols: `,`, `(`, `)`, `:`, `[`, `]`, `\n`, `space`, `hexnumber`, `integer`
 
 with:
 
@@ -89,7 +89,7 @@ code = {address ":" "space" instruction} .
 
 data = {address ":" "space" quad} .
 
-quad = ".quad" "space" address .
+.quad = ".quad" "space" address "\n" .
 
 instruction = lui | addi | add | sub | mul | divu | remu | sltu | ld | sd | beq | jal | jalr | ecall | nop .
 
@@ -97,33 +97,33 @@ register = "$zero" | "$ra" | "$sp" | "$gp" | "$tp" | "$t0" | ... | "$t6" | "$fp"
 
 address = "0x" hexnumber .
 
-lui = "lui" "space" register "," address .
+lui = "lui" "space" register "," address "\n" .
 
-addi = "addi" "space" register "," register "," register "," integer .
+addi = "addi" "space" register "," register "," register "," integer "\n" .
 
-add = "add" "space" register "," register "," register .
+add = "add" "space" register "," register "," register "\n" .
 
-sub = "sub" "space" register "," register "," register .
+sub = "sub" "space" register "," register "," register "\n" .
 
-mul = mul "space" register "," register "," register .
+mul = "mul" "space" register "," register "," register "\n" .
 
-divu = divu "space" register "," register "," register .
+divu = "divu" "space" register "," register "," register "\n" .
 
-remu = remu "space" register "," register "," register .
+remu = "remu" "space" register "," register "," register "\n" .
 
-sltu = sltu "space" register "," register "," register .
+sltu = "sltu" "space" register "," register "," register "\n" .
 
-ld = ld "space" register "," integer "(" register ")" .
+ld = "ld" "space" register "," integer "(" register ")" "\n" .
 
-sd = sd "space" register "," integer "(" register ")" .
+sd = "sd" "space" register "," integer "(" register ")" "\n" .
 
-beq = beq "space" register "," register "," integer "[" address "]" .
+beq = "beq" "space" register "," register "," integer "[" address "]" "\n" .
 
-jal = jal "space" register "," integer "[" address "]" .
+jal = "jal" "space" register "," integer "[" address "]" "\n" .
 
-jalr = jalr "space" register "," integer "(" register ")" .
+jalr = "jalr" "space" register "," integer "(" register ")" "\n" .
 
-ecall = ecall .
+ecall = "ecall" "\n" .
 
-nop = nop .
+nop = "nop" "\n" .
 ```
