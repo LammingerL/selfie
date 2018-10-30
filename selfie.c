@@ -2,13 +2,10 @@
 Copyright (c) 2015-2018, the Selfie Project authors. All rights reserved.
 Please see the AUTHORS file for details. Use of this source code is
 governed by a BSD license that can be found in the LICENSE file.
-
 Selfie is a project of the Computational Systems Group at the
 Department of Computer Sciences of the University of Salzburg
 in Austria. For further information and code please refer to:
-
 http://selfie.cs.uni-salzburg.at
-
 The Selfie Project provides an educational platform for teaching
 undergraduate and graduate students the design and implementation
 of programming languages and runtime systems. The focus is on the
@@ -16,9 +13,7 @@ construction of compilers, libraries, operating systems, and even
 virtual machine monitors. The common theme is to identify and
 resolve self-reference in systems code which is seen as the key
 challenge when teaching systems engineering, hence the name.
-
 Selfie is a self-contained 64-bit, 10-KLOC C implementation of:
-
 1. a self-compiling compiler called starc that compiles
    a tiny but still fast subset of C called C Star (C*) to
    a tiny and easy-to-teach subset of RISC-V called RISC-U,
@@ -31,12 +26,10 @@ Selfie is a self-contained 64-bit, 10-KLOC C implementation of:
    that executes RISC-U code symbolically,
 5. a simple SAT solver that reads CNF DIMACS files, and
 6. a tiny C* library called libcstar utilized by selfie.
-
 Selfie is implemented in a single (!) file and kept minimal for simplicity.
 There is also a simple in-memory linker, a RISC-U disassembler, a profiler,
 and a debugger with replay as well as minimal operating system support in
 the form of RISC-V system calls built into the emulator.
-
 C* is a tiny Turing-complete subset of C that includes dereferencing
 (the * operator) but excludes composite data types, bitwise and Boolean
 operators, and many other features. There are only unsigned 64-bit
@@ -48,19 +41,16 @@ arithmetics helping students better understand arithmetic operators.
 C* is supposed to be close to the minimum necessary for implementing
 a self-compiling, single-pass, recursive-descent compiler. C* can be
 taught in one to two weeks of classes depending on student background.
-
 The compiler can readily be extended to compile features missing in C*
 and to improve performance of the generated code. The compiler generates
 RISC-U executables in ELF format that are compatible with the official
 RISC-V toolchain. The mipster emulator can execute RISC-U executables
 loaded from file but also from memory immediately after code generation
 without going through the file system.
-
 RISC-U is a tiny Turing-complete subset of the RISC-V instruction set.
 It only features unsigned 64-bit integer arithmetic, double-word memory,
 and simple control-flow instructions but neither bitwise nor byte- and
 word-level instructions. RISC-U can be taught in one week of classes.
-
 The emulator implements minimal operating system support that is meant
 to be extended by students, first as part of the emulator, and then
 ported to run on top of it, similar to an actual operating system or
@@ -69,7 +59,6 @@ helps exposing the self-referential nature of that challenge. In fact,
 selfie goes one step further by implementing microkernel functionality
 as part of the emulator and a hypervisor that can run as part of the
 emulator as well as on top of it, all with the same code.
-
 Selfie is the result of many years of teaching systems engineering.
 The design of the compiler is inspired by the Oberon compiler of
 Professor Niklaus Wirth from ETH Zurich. RISC-U is inspired by the
@@ -200,7 +189,7 @@ uint64_t* power_of_two_table;
 uint64_t INT64_MAX; // maximum numerical value of a signed 64-bit integer
 uint64_t INT64_MIN; // minimum numerical value of a signed 64-bit integer
 
-uint64_t UINT64_MAX; // maximum numerical value of an unsigned 64-bit integer
+uint64_t UINT64_MAX ; // maximum numerical value of an unsigned 64-bit integer
 
 uint64_t MAX_FILENAME_LENGTH = 128;
 
@@ -1872,7 +1861,7 @@ uint64_t atoi(uint64_t* s) {
   uint64_t i;
   uint64_t n;
   uint64_t c;
-
+  int base = 16;
   // the conversion of the ASCII string in s to its
   // numerical value n begins with the leftmost digit in s
   i = 0;
@@ -1880,42 +1869,77 @@ uint64_t atoi(uint64_t* s) {
   // and the numerical value 0 for n
   n = 0;
 
-  // load character (one byte) at index i in s from memory requires
-  // bit shifting since memory access can only be done in double words
-  c = load_character(s, i);
 
+
+
+
+  if(load_character(s,0)!=48)
+    base == 10;
+  else
+    i = 2;          //if base 16, the hexadecimal number starts after 0x
+
+
+    // load character (one byte) at index i in s from memory requires
+    // bit shifting since memory access can only be done in double words
+  c = load_character(s, i);
   // loop until s is terminated
   while (c != 0) {
-    // the numerical value of ASCII-encoded decimal digits
-    // is offset by the ASCII code of '0' (which is 48)
-    c = c - '0';
 
-    if (c > 9) {
-      printf2((uint64_t*) "%s: cannot convert non-decimal number %s\n", selfie_name, s);
+    if(c>65)
+      c = c - 'A';    // the numerical value of ASCII-encoded hexadecimal digits(A-F)
+                      // is offset by the ASCII code of 'A' (which is 65)
+    else
+      c = c - '0';    // the numerical value of ASCII-encoded decimal digits
+                      // is offset by the ASCII code of '0' (which is 48)
 
-      exit(EXITCODE_BADARGUMENTS);
+    if (c > 15) {
+      printf2((uint64_t*) "%s: cannot convert non-decimal/hexadecimal number %s\n", selfie_name, s);
+
+    //  exit(EXITCODE_BADARGUMENTS);
     }
 
-    // assert: s contains a decimal number
-
-    // use base 10 but detect wrap around
-    if (n < UINT64_MAX / 10)
-      n = n * 10 + c;
-    else if (n == UINT64_MAX / 10)
-      if (c <= UINT64_MAX % 10)
+    if(base==10)
+    {
+      // use base 10 but detect wrap around
+      if (n < UINT64_MAX / 10)
         n = n * 10 + c;
-      else {
+      else if (n == UINT64_MAX / 10)
+        if (c <= UINT64_MAX % 10)
+          n = n * 10 + c;
+        else {
+          // s contains a decimal number larger than UINT64_MAX
+          printf2((uint64_t*) "%s: cannot convert out-of-bound number %s\n", selfie_name, s);
+
+          exit(EXITCODE_BADARGUMENTS);
+        }
+      else{
         // s contains a decimal number larger than UINT64_MAX
         printf2((uint64_t*) "%s: cannot convert out-of-bound number %s\n", selfie_name, s);
 
         exit(EXITCODE_BADARGUMENTS);
       }
-    else {
-      // s contains a decimal number larger than UINT64_MAX
-      printf2((uint64_t*) "%s: cannot convert out-of-bound number %s\n", selfie_name, s);
-
-      exit(EXITCODE_BADARGUMENTS);
     }
+
+    else if(base==16){
+      // use base 16 but detect wrap around
+      if (n < UINT64_MAX / 16)
+        n = n * 16 + c;
+      else if (n == UINT64_MAX / 16)
+        if (c <= UINT64_MAX % 16)
+          n = n * 16 + c;
+        else {
+          // s contains a hexadecimal number larger than UINT64_MAX
+          printf2((uint64_t*) "%s: cannot convert out-of-bound number %s\n", selfie_name, s);
+
+          exit(EXITCODE_BADARGUMENTS);
+        }
+      else {
+        // s contains a hexadecimal number larger than UINT64_MAX
+        printf2((uint64_t*) "%s: cannot convert out-of-bound number %s\n", selfie_name, s);
+
+        exit(EXITCODE_BADARGUMENTS);
+      }
+  }
 
     // go to the next digit
     i = i + 1;
@@ -1924,6 +1948,7 @@ uint64_t atoi(uint64_t* s) {
     // bit shifting since memory access can only be done in double words
     c = load_character(s, i);
   }
+
 
   return n;
 }
@@ -9074,12 +9099,10 @@ uint64_t up_load_string(uint64_t* context, uint64_t* s, uint64_t SP) {
 
 void up_load_arguments(uint64_t* context, uint64_t argc, uint64_t* argv) {
   /* upload arguments like a UNIX system
-
       SP
       |
       V
    | argc | argv[0] | ... | argv[n] | 0 | env[0] | ... | env[m] | 0 |
-
      with argc > 0, n == argc - 1, and m == 0 (that is, env is empty) */
   uint64_t SP;
   uint64_t* vargv;
