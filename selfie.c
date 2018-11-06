@@ -175,6 +175,11 @@ uint64_t CHAR_LT           = '<';
 uint64_t CHAR_GT           = '>';
 uint64_t CHAR_EXCLAMATION  = '!';
 uint64_t CHAR_PERCENTAGE   = '%';
+uint64_t CHAR_COLLON       = ':';
+uint64_t CHAR_DOLLAR       = '$';
+uint64_t CHAR_LSQUAREBRACKET    = '[';
+uint64_t CHAR_RSQUAREBRACKET    = ']';
+uint64_t CHAR_DOT          = '.';
 uint64_t CHAR_SINGLEQUOTE  =  39; // ASCII code 39 = '
 uint64_t CHAR_DOUBLEQUOTE  = '"';
 uint64_t CHAR_BACKSLASH    =  92; // ASCII code 92 = backslash
@@ -279,6 +284,10 @@ void reset_library() {
 // -----------------------------------------------------------------
 // *~*~ *~*~ *~*~ *~*~ *~*~ *~*~ *~*~ *~*~ *~*~ *~*~ *~*~ *~*~ *~*~
 
+void init_myscanner();
+
+
+
 // -----------------------------------------------------------------
 // ---------------------------- SCANNER ----------------------------
 // -----------------------------------------------------------------
@@ -317,32 +326,59 @@ void handle_escape_sequence();
 uint64_t SYM_EOF          = -1; // end of file
 uint64_t SYM_IDENTIFIER   = 0;  // identifier
 uint64_t SYM_INTEGER      = 1;  // integer
-uint64_t SYM_VOID         = 2;  // void
-uint64_t SYM_UINT64       = 3;  // uint64_t
-uint64_t SYM_SEMICOLON    = 4;  // ;
-uint64_t SYM_IF           = 5;  // if
-uint64_t SYM_ELSE         = 6;  // else
-uint64_t SYM_PLUS         = 7;  // +
-uint64_t SYM_MINUS        = 8;  // -
-uint64_t SYM_ASTERISK     = 9;  // *
-uint64_t SYM_DIV          = 10; // /
-uint64_t SYM_EQUALITY     = 11; // ==
-uint64_t SYM_ASSIGN       = 12; // =
-uint64_t SYM_LPARENTHESIS = 13; // (
-uint64_t SYM_RPARENTHESIS = 14; // )
-uint64_t SYM_LBRACE       = 15; // {
-uint64_t SYM_RBRACE       = 16; // }
-uint64_t SYM_WHILE        = 17; // while
-uint64_t SYM_RETURN       = 18; // return
-uint64_t SYM_COMMA        = 19; // ,
-uint64_t SYM_LT           = 20; // <
-uint64_t SYM_LEQ          = 21; // <=
-uint64_t SYM_GT           = 22; // >
-uint64_t SYM_GEQ          = 23; // >=
-uint64_t SYM_NOTEQ        = 24; // !=
+uint64_t SYM_VOID         = -2;  // void
+uint64_t SYM_UINT64       = -3;  // uint64_t
+uint64_t SYM_SEMICOLON    = -4;  // ;
+uint64_t SYM_IF           = -5;  // if
+uint64_t SYM_ELSE         = -6;  // else
+uint64_t SYM_PLUS         = -7;  // +
+uint64_t SYM_MINUS        = -8;  // -
+uint64_t SYM_ASTERISK     = -9;  // *
+uint64_t SYM_DIV          = -10; // /
+uint64_t SYM_EQUALITY     = -11; // ==
+uint64_t SYM_ASSIGN       = -12; // =
+uint64_t SYM_LPARENTHESIS = -13; // (
+uint64_t SYM_RPARENTHESIS = -14; // )
+uint64_t SYM_LBRACE       = -15; // {
+uint64_t SYM_RBRACE       = -16; // }
+uint64_t SYM_WHILE        = -17; // while
+uint64_t SYM_RETURN       = -18; // return
+uint64_t SYM_COMMA        = -19; // ,
+uint64_t SYM_LT           = -20; // <
+uint64_t SYM_LEQ          = -21; // <=
+uint64_t SYM_GT           = -22; // >
+uint64_t SYM_GEQ          = -23; // >=
+uint64_t SYM_NOTEQ        = -24; // !=
 uint64_t SYM_MOD          = 25; // %
 uint64_t SYM_CHARACTER    = 26; // character
 uint64_t SYM_STRING       = 27; // string
+uint64_t SYM_LSQUAREBRACKET     = 2; // [
+uint64_t SYM_RSQUAREBRACKET     = 3; // ]
+uint64_t SYM_COLON              = 4; // :
+uint64_t SYM_LUI                = 5; // lui instruction
+uint64_t SYM_ADDI               = 6; // addi instruction
+uint64_t SYM_ADD                = 7; // add
+uint64_t SYM_SUB                = 8; // sub
+uint64_t SYM_MUL                = 9; // mul
+uint64_t SYM_DIVU               = 10; // divu
+uint64_t SYM_REMU               = 11; // remu
+uint64_t SYM_SLTU               = 12; // sltu
+uint64_t SYM_LD                 = 13; // ld
+uint64_t SYM_SD                 = 14; // sd
+uint64_t SYM_BEQ                = 15; // beq
+uint64_t SYM_JAL                = 16; // jal
+uint64_t SYM_JALR               = 17; // jalr
+uint64_t SYM_ECALL              = 18; // ecall
+uint64_t SYM_QUAD               = 19; // .quad
+uint64_t SYM_NOP                = 20; // nop
+uint64_t SYM_HEXADECIMAL        = 21; // hexadecimal
+uint64_t SYM_DOLLAR             = 22; //$
+uint64_t SYM_DOT                = 23; // .
+uint64_t SYM_HEXPRE             = 24; // 0x
+uint64_t SYM_SPACE              = 52; // whtitespace
+
+
+
 
 uint64_t* SYMBOLS; // strings representing symbols
 
@@ -408,6 +444,32 @@ void init_scanner () {
   *(SYMBOLS + SYM_MOD)          = (uint64_t) "%";
   *(SYMBOLS + SYM_CHARACTER)    = (uint64_t) "character";
   *(SYMBOLS + SYM_STRING)       = (uint64_t) "string";
+  *(SYMBOLS + SYM_LSQUAREBRACKET)       = (uint64_t) "[";
+  *(SYMBOLS + SYM_RSQUAREBRACKET)       = (uint64_t) "]";
+  *(SYMBOLS + SYM_COLON)        = (uint64_t) ":";
+  *(SYMBOLS + SYM_LUI)          = (uint64_t) "lui";
+  *(SYMBOLS + SYM_ADDI)         = (uint64_t) "addi";
+  *(SYMBOLS + SYM_ADD)          = (uint64_t) "add";
+  *(SYMBOLS + SYM_SUB)          = (uint64_t) "sub";
+  *(SYMBOLS + SYM_MUL)          = (uint64_t) "mul";
+  *(SYMBOLS + SYM_DIVU)         = (uint64_t) "divu";
+  *(SYMBOLS + SYM_REMU)         = (uint64_t) "remu";
+  *(SYMBOLS + SYM_SLTU)         = (uint64_t) "sltu";
+  *(SYMBOLS + SYM_LD)           = (uint64_t) "ld";
+  *(SYMBOLS + SYM_SD)           = (uint64_t) "sd";
+  *(SYMBOLS + SYM_BEQ)          = (uint64_t) "beq";
+  *(SYMBOLS + SYM_JAL)          = (uint64_t) "jal";
+  *(SYMBOLS + SYM_JALR)         = (uint64_t) "jalr";
+  *(SYMBOLS + SYM_ECALL)        = (uint64_t) "ecall";
+  *(SYMBOLS + SYM_QUAD)         = (uint64_t) "quad";
+  *(SYMBOLS + SYM_NOP)          = (uint64_t) "nop";
+  *(SYMBOLS + SYM_HEXADECIMAL)  = (uint64_t) "hexadecimal";
+  *(SYMBOLS + SYM_DOLLAR)       = (uint64_t) "$";
+  *(SYMBOLS + SYM_DOT)          = (uint64_t) ".";
+  *(SYMBOLS + SYM_HEXPRE)       = (uint64_t) "0x";
+
+
+
 
   character = CHAR_EOF;
   symbol    = SYM_EOF;
@@ -424,6 +486,7 @@ void reset_scanner() {
   number_of_comments           = 0;
   number_of_scanned_symbols    = 0;
 }
+
 
 // -----------------------------------------------------------------
 // ------------------------- SYMBOL TABLE --------------------------
@@ -525,7 +588,8 @@ void reset_symbol_tables() {
 // -----------------------------------------------------------------
 // ---------------------------- PARSER -----------------------------
 // -----------------------------------------------------------------
-
+uint64_t is_not_eof();
+//-----------
 void reset_parser();
 
 uint64_t is_not_rbrace_or_eof();
@@ -1253,6 +1317,8 @@ void print_profile();
 
 void selfie_disassemble(uint64_t verbose);
 
+void selfie_assemble();
+
 // ------------------------ GLOBAL CONSTANTS -----------------------
 
 uint64_t EXCEPTION_NOEXCEPTION        = 0;
@@ -1861,7 +1927,8 @@ uint64_t atoi(uint64_t* s) {
   uint64_t i;
   uint64_t n;
   uint64_t c;
-  int base = 16;
+  uint64_t base;
+  base = 16;
   // the conversion of the ASCII string in s to its
   // numerical value n begins with the leftmost digit in s
   i = 0;
@@ -1874,7 +1941,7 @@ uint64_t atoi(uint64_t* s) {
 
 
   if(load_character(s,0)!=48)
-    base == 10;
+    base = 10;
   else
     i = 2;          //if base 16, the hexadecimal number starts after 0x
 
@@ -2589,7 +2656,8 @@ uint64_t is_character_not_double_quote_or_new_line_or_eof() {
 }
 
 uint64_t identifier_string_match(uint64_t keyword) {
-  return string_compare(identifier, (uint64_t*) *(SYMBOLS + keyword));
+
+    return string_compare(identifier, (uint64_t*) *(SYMBOLS + keyword));
 }
 
 uint64_t identifier_or_keyword() {
@@ -2605,6 +2673,40 @@ uint64_t identifier_or_keyword() {
     return SYM_RETURN;
   if (identifier_string_match(SYM_VOID))
     return SYM_VOID;
+  if (identifier_string_match(SYM_ADD))
+    return SYM_ADD;
+  if (identifier_string_match(SYM_LUI))
+    return SYM_LUI;
+  if (identifier_string_match(SYM_ADDI))
+    return SYM_ADDI;
+  if (identifier_string_match(SYM_SUB))
+    return SYM_SUB;
+  if (identifier_string_match(SYM_MUL))
+    return SYM_MUL;
+  if (identifier_string_match(SYM_DIVU))
+    return SYM_DIVU;
+  if (identifier_string_match(SYM_REMU))
+    return SYM_REMU;
+  if (identifier_string_match(SYM_SLTU))
+    return SYM_SLTU;
+  if (identifier_string_match(SYM_LD))
+    return SYM_LD;
+  if (identifier_string_match(SYM_SD))
+    return SYM_SD;
+  if (identifier_string_match(SYM_BEQ))
+    return SYM_BEQ;
+  if (identifier_string_match(SYM_JAL))
+    return SYM_JAL;
+  if (identifier_string_match(SYM_JALR))
+    return SYM_JALR;
+  if (identifier_string_match(SYM_ECALL))
+    return SYM_ECALL;
+  if (identifier_string_match(SYM_QUAD))
+    return SYM_QUAD;
+  if (identifier_string_match(SYM_NOP))
+    return SYM_NOP;
+  if (identifier_string_match(SYM_HEXPRE))
+    return SYM_HEXPRE;
   else
     return SYM_IDENTIFIER;
 }
@@ -2734,7 +2836,7 @@ void get_symbol() {
         if (character == CHAR_DOUBLEQUOTE)
           get_character();
         else {
-          syntax_error_character(CHAR_DOUBLEQUOTE);
+          syntax_error_character(CHAR_DOUBLEQUOTE);             //TODOL: add new symbols here
 
           exit(EXITCODE_SCANNERERROR);
         }
@@ -2833,7 +2935,39 @@ void get_symbol() {
 
         symbol = SYM_MOD;
 
-      } else {
+      } else if (character == CHAR_COLLON) {
+        get_character();
+
+        symbol = SYM_COLON;
+      }
+        else if (character == CHAR_SPACE) {
+          get_character();
+
+          symbol = SYM_SPACE;
+
+      }
+      else if (character == CHAR_DOLLAR) {
+        get_character();
+
+        symbol = SYM_DOLLAR;
+      }
+
+      else if (character == CHAR_LSQUAREBRACKET) {
+        get_character();
+
+        symbol = SYM_LSQUAREBRACKET;
+      }
+      else if (character == CHAR_RSQUAREBRACKET) {
+        get_character();
+
+        symbol = SYM_RSQUAREBRACKET;
+      }
+      else if (character == CHAR_DOT) {
+        get_character();
+
+        symbol = SYM_DOT;
+      }
+        else {
         print_line_number((uint64_t*) "syntax error", line_number);
         print((uint64_t*) "found unknown character ");
         print_character(character);
@@ -3012,7 +3146,707 @@ uint64_t report_undefined_procedures() {
 
   return undefined;
 }
+// -----------------------------------------------------------------
+// ---------------------------- MYPARSER -----------------------------
+// -----------------------------------------------------------------
+uint64_t is_not_eof() {
+  if (symbol == SYM_EOF)
+    return 0;
+  else
+    return 1;
+}
 
+uint64_t riscu_is_expression() {
+  if(symbol == SYM_LPARENTHESIS)
+    return 1;
+  else if(symbol == SYM_LSQUAREBRACKET)
+    return 1;
+  else if(symbol == SYM_INTEGER)
+    return 1;
+  else if(symbol == SYM_HEXADECIMAL)
+    return 1;
+  else
+    return 0;
+}
+
+uint64_t riscu_look_for_factor() {
+  if (symbol == SYM_HEXADECIMAL)
+    return 0;
+  else if (symbol == SYM_INTEGER)
+    return 0;
+  else if (symbol == SYM_LPARENTHESIS)
+    return 0;
+  else if (symbol == SYM_EOF)
+    return 0;
+  else
+    return 1;
+}
+
+
+uint64_t look_for_instruction() {
+  if (symbol == SYM_LUI)
+    return 1;
+  else if(symbol == SYM_ADDI)
+    return 1;
+  else if(symbol == SYM_ADD)
+    return 1;
+  else if(symbol == SYM_SUB)
+    return 1;
+  else if(symbol == SYM_MUL)
+    return 1;
+  else if(symbol == SYM_DIVU)
+    return 1;
+  else if(symbol == SYM_REMU)
+    return 1;
+  else if(symbol == SYM_SLTU)
+    return 1;
+  else if(symbol == SYM_LD)
+    return 1;
+  else if(symbol == SYM_SD)
+    return 1;
+  else if(symbol == SYM_BEQ)
+    return 1;
+  else if(symbol == SYM_JAL)
+    return 1;
+  else if(symbol == SYM_JALR)
+    return 1;
+  else if(symbol == SYM_ECALL)
+    return 1;
+  else if(symbol == SYM_QUAD)
+    return 1;
+  else if(symbol == SYM_NOP)
+    return 1;
+  else
+    return 0;
+}
+
+uint64_t look_for_register() {
+  if (symbol == REG_ZR)
+    return 0;
+  else if(symbol == REG_RA)
+    return 0;
+  else if(symbol == REG_SP)
+    return 0;
+  else if(symbol == REG_GP)
+    return 0;
+  else if(symbol == REG_TP)
+    return 0;
+  else if(symbol == REG_T0)
+    return 0;
+  else if(symbol == REG_T1)
+    return 0;
+  else if(symbol == REG_T2)
+    return 0;
+  else if(symbol == REG_FP)
+    return 0;
+  else if(symbol == REG_S1)
+    return 0;
+  else if(symbol == REG_A0)
+    return 0;
+  else if(symbol == REG_A1)
+    return 0;
+  else if(symbol == REG_A2)
+    return 0;
+  else if(symbol == REG_A3)
+    return 0;
+  else if(symbol == REG_A4)
+    return 0;
+  else if(symbol == REG_A5)
+    return 0;
+  else if(symbol == REG_A6)
+    return 0;
+  else if(symbol == REG_A7)
+    return 0;
+  else if(symbol == REG_S2)
+    return 0;
+  else if(symbol == REG_S3)
+    return 0;
+  else if(symbol == REG_S4)
+    return 0;
+  else if(symbol == REG_S5)
+    return 0;
+  else if(symbol == REG_S6)
+    return 0;
+  else if(symbol == REG_S7)
+    return 0;
+  else if(symbol == REG_S8)
+    return 0;
+  else if(symbol == REG_S9)
+    return 0;
+  else if(symbol == REG_S10)
+    return 0;
+  else if(symbol == REG_S11)
+    return 0;
+  else if(symbol == REG_T3)
+    return 0;
+  else if(symbol == REG_T4)
+    return 0;
+  else if(symbol == REG_T5)
+    return 0;
+  else if(symbol == REG_T6)
+    return 0;
+  else
+    return 1;
+}
+
+uint64_t is_hexpre()
+{
+  if(character == '0')
+  {
+    get_character();
+    if(character == 'x')
+      return 1;
+  }
+    return 0;
+}
+uint64_t is_register()
+{
+  if(symbol==SYM_DOLLAR)
+  {
+    //get_character();
+  //  get_character();
+    if(character=='r')
+    {
+
+      get_character();
+      if(character == 'a')
+        return 1;
+    }
+    else
+    if(character=='s')
+    {
+      get_character();
+      if(character== 'p')
+        return 1;
+      else if((character == '1'))   //11 und 10
+            return 1;
+      else if((character == '2'))
+            return 1;
+      else if((character == '3'))
+            return 1;
+      else if((character == '4'))
+            return 1;
+      else if((character == '5'))
+            return 1;
+      else if((character == '6'))
+            return 1;
+      else if((character == '7'))
+            return 1;
+      else if((character == '8'))
+            return 1;
+      else if((character == '9'))
+            return 1;
+
+    }
+    else
+    if(character=='g')
+    {
+      get_character();
+      if(character== 'p')
+        return 1;
+    }
+    else
+    if(character=='t')
+    {
+      get_character();
+      if(character == 'p' )
+      {
+
+        return 1;
+      }
+      else if(character == '0')
+              return 1;
+      else if(character == '1')
+              return 1;
+      else if(character == '2')
+              return 1;
+      else if(character == '3')
+              return 1;
+      else if(character == '4')
+              return 1;
+      else if(character == '5')
+              return 1;
+      else if(character == '6')
+              return 1;
+    }
+    else
+    if(character=='f')
+    {
+      get_character();
+      if(character== 'p' )
+        return 1;
+    }
+    else
+    if(character=='a')
+    {
+      get_character();
+      if(character == '0')
+        return 1;
+      else if(character == '1')
+        return 1;
+      else if(character == '2')
+        return 1;
+      else if(character == '3')
+        return 1;
+      else if(character == '4')
+        return 1;
+      else if(character == '5')
+        return 1;
+      else if(character == '6')
+        return 1;
+      else if(character == '7')
+        return 1;
+    }
+    else
+    if(character=='z')
+    {
+
+      get_character();
+      if(character == 'e' )
+      {
+        get_character();
+        if(character == 'r' )
+        {
+          get_character();
+          if(character == 'o' )
+          {
+
+            return 1;
+          }
+        }
+      }
+
+    }else
+      return 0;
+
+  }else
+    return 0;
+}
+uint64_t three_register_check()
+{
+  get_symbol();
+  ic_add = ic_add + 1;
+  if(is_register())
+  {
+
+
+    get_character();
+    if(character == ',')
+    {
+      get_symbol();
+      get_symbol();
+      if(is_register())
+      {
+        get_character();
+        if(character == ',')
+        {
+          get_symbol();
+          get_symbol();
+          if(is_register())
+          {
+
+          }
+        }
+      }
+    }
+  }
+}
+uint64_t ld_sd_check()
+{
+  get_symbol();
+  ic_add = ic_add + 1;
+  if(is_register())
+  {
+    get_character();
+    if(character == ',')
+    {
+      get_symbol();
+      get_symbol();
+      if(symbol == SYM_INTEGER)
+      {
+        get_symbol();
+        if(symbol == SYM_LPARENTHESIS)
+        {
+          get_symbol();
+          if(is_register())
+          {
+            get_symbol();
+            get_symbol();
+            if(symbol == SYM_RPARENTHESIS)
+            {
+              //print("correct LD/SD");
+            }
+            else
+             exit(EXITCODE_PARSERERROR);
+          }else
+           exit(EXITCODE_PARSERERROR);
+        }else
+         exit(EXITCODE_PARSERERROR);
+      }else if(symbol == SYM_MINUS)
+          {
+            get_symbol();
+            if(symbol == SYM_INTEGER)
+            {
+              get_symbol();
+              if(symbol == SYM_LPARENTHESIS)
+              {
+                get_symbol();
+                if(is_register())
+                {
+                  get_symbol();
+                  get_symbol();
+                  if(symbol == SYM_RPARENTHESIS)
+                  {
+                    //print("correct LD/SD");
+                  }else
+                   exit(EXITCODE_PARSERERROR);
+                }else
+                 exit(EXITCODE_PARSERERROR);
+              }else
+               exit(EXITCODE_PARSERERROR);
+            }else
+             exit(EXITCODE_PARSERERROR);
+          }else
+           exit(EXITCODE_PARSERERROR);
+    }else
+     exit(EXITCODE_PARSERERROR);
+  }else
+   exit(EXITCODE_PARSERERROR);
+}
+
+uint64_t reg_reg_imm_check()
+{
+
+  get_symbol();
+  if(is_register())
+  {
+      get_character();
+      if(character == ',')
+      {
+        get_symbol();
+        get_symbol();
+        if(is_register())
+        {
+          get_character();
+          if(character == ',')
+          {
+            get_symbol();
+            get_symbol();
+            if(symbol == SYM_INTEGER)
+            {
+
+
+            }
+            else
+            if(symbol == SYM_MINUS)
+            {
+              get_symbol();
+
+              if(symbol == SYM_INTEGER)
+              {
+
+
+              }
+              else
+              exit(EXITCODE_PARSERERROR);
+            }
+            else
+              exit(EXITCODE_PARSERERROR);
+          }
+          else
+            exit(EXITCODE_PARSERERROR);
+        }
+        else
+          exit(EXITCODE_PARSERERROR);
+      }
+      else
+        exit(EXITCODE_PARSERERROR);
+  }
+  else
+    exit(EXITCODE_PARSERERROR);
+}
+
+uint64_t reg_imm_check()
+{
+  get_symbol();
+  if(is_register())
+  {
+      get_symbol();
+      get_symbol();
+      if(symbol == SYM_COMMA)
+      {
+
+        get_symbol();
+        get_symbol();
+          if(is_hexpre())
+          {
+            get_symbol();
+            if(symbol ==SYM_INTEGER)
+            {
+
+            }
+
+          }
+
+        }else
+          exit(EXITCODE_PARSERERROR);
+
+  }else
+    exit(EXITCODE_PARSERERROR);
+}
+
+uint64_t jal_check()
+{
+  get_symbol();
+
+  if(is_register())
+  {
+
+      get_character();
+      if(character == ',')
+      {
+        get_symbol();
+        get_symbol();
+          if(symbol == SYM_INTEGER)
+          {
+
+            get_symbol();
+            if(symbol==SYM_LSQUAREBRACKET)
+            {
+
+              if(is_hexpre())
+              {
+                get_symbol();
+                get_symbol();
+                get_symbol();
+                if(symbol==SYM_RSQUAREBRACKET)
+                {
+
+                }
+
+
+              }else
+                exit(EXITCODE_PARSERERROR);
+            }else
+              exit(EXITCODE_PARSERERROR);
+          }
+          else
+          if(symbol == SYM_MINUS)
+          {
+            get_symbol();
+            if(symbol == SYM_INTEGER)
+            {
+              get_symbol();
+              if(symbol==SYM_LSQUAREBRACKET)
+              {
+
+                if(is_hexpre())
+                {
+                  get_symbol();
+                  get_symbol();
+                  get_symbol();
+                  if(symbol==SYM_RSQUAREBRACKET)
+                  {
+
+                  }
+                }
+              }else
+                exit(EXITCODE_PARSERERROR);
+            }else
+              exit(EXITCODE_PARSERERROR);
+          }else
+            exit(EXITCODE_PARSERERROR);
+        }else
+          exit(EXITCODE_PARSERERROR);
+
+  }else
+    exit(EXITCODE_PARSERERROR);
+}
+
+uint64_t jalr_check()
+{
+  get_symbol();
+
+  if(is_register())
+  {
+
+      get_character();
+      if(character == ',')
+      {
+        get_symbol();
+        get_symbol();
+          if(symbol == SYM_INTEGER)
+          {
+
+            get_symbol();
+            if(symbol==SYM_LPARENTHESIS)
+            {
+
+              if(is_hexpre())
+              {
+                get_symbol();
+                get_symbol();
+                get_symbol();
+                if(symbol==SYM_RPARENTHESIS)
+                {
+
+                }
+
+
+              }
+            }else
+              exit(EXITCODE_PARSERERROR);
+          }
+          else
+          if(symbol == SYM_MINUS)
+          {
+            get_symbol();
+            if(symbol == SYM_INTEGER)
+            {
+              get_symbol();
+              if(symbol==SYM_LPARENTHESIS)
+              {
+
+                if(is_hexpre())
+                {
+                  get_symbol();
+                  get_symbol();
+                  get_symbol();
+                  if(symbol==SYM_RPARENTHESIS)
+                  {
+
+                  }
+                }
+              }else
+                exit(EXITCODE_PARSERERROR);
+            }else
+              exit(EXITCODE_PARSERERROR);
+          }else
+            exit(EXITCODE_PARSERERROR);
+        }else
+          exit(EXITCODE_PARSERERROR);
+
+  }else
+    exit(EXITCODE_PARSERERROR);
+}
+
+uint64_t riscu_parse()                //TODOL:can check for :,$ etc. single symols, but not instructions. check while if etc
+{
+  uint64_t reg1;
+  uint64_t reg2;
+  uint64_t reg3;
+  uint64_t immediate;
+
+
+
+  while(symbol != SYM_EOF)
+  {
+    if (symbol == SYM_EOF)
+      exit(EXITCODE_PARSERERROR);
+    else
+      get_symbol();
+
+      if(symbol == SYM_COLON)
+      {
+
+        get_symbol();
+
+        if(symbol == SYM_DOT)
+        {
+          get_symbol();
+        }
+                if(look_for_instruction())
+                {
+
+
+                  if(symbol == SYM_LUI)
+                      {
+                        reg_imm_check();
+                      }
+                      if(symbol == SYM_ADDI)                              //works
+                      {
+                        reg_reg_imm_check();
+                      }
+
+                      if(symbol == SYM_ADD)
+                      {
+                        three_register_check();
+                      }
+
+                      if(symbol == SYM_SUB)
+                      {
+                        three_register_check();
+                      }
+
+                      if(symbol == SYM_MUL)
+                      {
+                        three_register_check();
+                      }
+
+                      if(symbol == SYM_DIVU)
+                      {
+                        three_register_check();
+                      }
+
+                      if(symbol == SYM_REMU)
+                      {
+                        three_register_check();
+                      }
+
+                      if(symbol == SYM_SLTU)
+                      {
+                        three_register_check();
+                      }
+
+                      if(symbol == SYM_LD)
+                      {
+                       ld_sd_check();
+                      }
+
+                      if(symbol == SYM_SD)
+                      {
+                        ld_sd_check();
+                      }
+                     if(symbol == SYM_BEQ)
+                      {
+                        reg_reg_imm_check();
+                      }
+
+                      if(symbol == SYM_JAL)
+                      {
+                          jal_check();
+                      }
+
+                      if(symbol == SYM_JALR)
+                      {
+                        jalr_check();
+                      }
+
+                      if(symbol == SYM_ECALL)
+                      {
+
+
+                      }
+
+                      if(symbol == SYM_NOP)
+                      {
+
+                      }
+
+                      if(symbol == SYM_QUAD)
+                      {
+
+                      }
+
+                }
+                else
+                  exit(EXITCODE_PARSERERROR);
+
+          }
+   }
+
+  print_instruction_counters();
+}
 // -----------------------------------------------------------------
 // ---------------------------- PARSER -----------------------------
 // -----------------------------------------------------------------
@@ -4525,6 +5359,7 @@ void compile_cstar() {
   uint64_t initial_value;
   uint64_t* entry;
 
+                                                              //TODOL symbol searching done the same way works here for while etc
   while (symbol != SYM_EOF) {
     while (look_for_type()) {
       syntax_error_unexpected();
@@ -4533,6 +5368,7 @@ void compile_cstar() {
         exit(EXITCODE_PARSERERROR);
       else
         get_symbol();
+
     }
 
     if (symbol == SYM_VOID) {
@@ -4822,6 +5658,7 @@ void selfie_compile() {
       reset_parser();
 
       compile_cstar();
+
 
       printf4((uint64_t*) "%s: %d characters read in %d lines and %d comments\n", selfie_name,
         (uint64_t*) number_of_read_characters,
@@ -8641,6 +9478,41 @@ void print_profile() {
   }
 }
 
+void selfie_assemble()                    //TODOL: print zum debuggen works, assembly_name file parsen
+{
+
+  assembly_name = get_argument();
+
+//  if (code_length == 0) {
+//    printf2((uint64_t*) "%s: nothing to assemble to output file %s\n", selfie_name, assembly_name);
+
+//    return;
+//  }
+
+  // assert: assembly_name is mapped and not longer than MAX_FILENAME_LENGTH
+
+  source_fd = sign_extend(open(assembly_name, O_RDONLY, 0), SYSCALL_BITWIDTH);
+
+
+  //assembly_fd = open_write_only(assembly_name);
+
+  reset_scanner();
+  reset_parser();
+  reset_instruction_counters();
+
+  riscu_parse();
+
+  if (signed_less_than(assembly_fd, 0)) {
+    printf2((uint64_t*) "%s: could not create assembly output file %s\n", selfie_name, assembly_name);
+
+    exit(EXITCODE_IOERROR);
+  }
+
+  output_name = assembly_name;
+  output_fd   = assembly_fd;
+
+}
+
 void selfie_disassemble(uint64_t verbose) {
   uint64_t data;
 
@@ -9699,6 +10571,97 @@ uint64_t babysat(uint64_t depth) {
 
   return UNSAT;
 }
+// -----------------------------------------------------------------
+// ----------------------- RISCU PARSER ----------------------------
+// -----------------------------------------------------------------
+void riscu_find_next_character(uint64_t new_line) {
+  uint64_t in_comment;
+
+  // assuming we are not in a comment
+  in_comment = 0;
+
+  // read and discard all whitespace and comments until a character is found
+  // that is not whitespace and does not occur in a comment, or the file ends
+  while (1) {
+    if (in_comment) {
+      get_character();
+
+      if (is_character_new_line())
+        // comments end with new line
+        in_comment = 0;
+      else if (character == CHAR_EOF)
+        return;
+      else
+        // count the characters in comments as ignored characters
+        // line feed and carriage return are counted below
+        number_of_ignored_characters = number_of_ignored_characters + 1;
+    } else if (new_line) {
+      new_line = 0;
+
+      if (character == 'c') {
+        // 'c' at beginning of a line begins a comment
+        in_comment = 1;
+
+        // count the number of comments
+        number_of_comments = number_of_comments + 1;
+      }
+    } else if (is_character_whitespace()) {
+      if (is_character_new_line())
+        new_line = 1;
+      else
+        new_line = 0;
+
+      // count whitespace as ignored characters
+      number_of_ignored_characters = number_of_ignored_characters + 1;
+
+      get_character();
+    } else                                                                          //TODOL whitespace
+      // character found that is not whitespace and not occurring in a comment
+      return;
+  }
+}
+
+void riscu_get_symbol() {
+  riscu_find_next_character(0);
+
+  get_symbol();
+}
+
+uint64_t riscu_number() {
+  uint64_t number;
+
+  if (symbol == SYM_INTEGER) {
+    number = literal;
+
+    dimacs_get_symbol();
+
+    return number;
+  } else
+    syntax_error_symbol(SYM_INTEGER);
+    if (symbol == SYM_HEXADECIMAL) {
+      number = literal;
+
+      dimacs_get_symbol();
+
+      return number;
+    }
+  exit(EXITCODE_PARSERERROR);
+}
+
+void riscu_instruction(uint64_t* instruction) {
+  if (look_for_instruction()) {
+    if (string_compare(identifier, instruction)) {
+      riscu_get_symbol();
+
+      return;
+    } else
+      syntax_error_identifier(instruction);
+  } else
+    syntax_error_symbol(SYM_IDENTIFIER);
+
+  exit(EXITCODE_PARSERERROR);
+}
+
 
 // -----------------------------------------------------------------
 // ----------------------- DIMACS CNF PARSER -----------------------
@@ -9757,8 +10720,8 @@ void dimacs_find_next_character(uint64_t new_line) {
     } else if (new_line) {
       new_line = 0;
 
-      if (character == 'c') {
-        // 'c' at beginning of a line begins a comment
+      if (character == '/') {
+        // '/' at beginning of a line begins a comment
         in_comment = 1;
 
         // count the number of comments
@@ -9988,7 +10951,7 @@ void set_argument(uint64_t* argv) {
 void print_usage() {
   printf3((uint64_t*) "%s: usage: selfie { %s } [ %s ]\n",
     selfie_name,
-      (uint64_t*) "-c { source } | -o binary | [ -s | -S ] assembly | -l binary | -sat dimacs",
+      (uint64_t*) "-c { source } | -o binary | [ -s | -S ] assembly | -l binary | -sat dimacs | -a selfie.s",
       (uint64_t*) "( -m | -d | -r | -n | -y | -min | -mob ) 0-64 ...");
 }
 
@@ -10023,6 +10986,8 @@ uint64_t selfie() {
         selfie_load();
       else if (string_compare(option, (uint64_t*) "-sat"))
         selfie_sat();
+      else if (string_compare(option, (uint64_t*) "-a"))
+        selfie_assemble();                                               //TODOL: ersetzen durch -a function
       else if (string_compare(option, (uint64_t*) "-m"))
         return selfie_run(MIPSTER);
       else if (string_compare(option, (uint64_t*) "-d"))
