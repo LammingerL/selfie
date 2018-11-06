@@ -3569,7 +3569,6 @@ uint64_t reg_reg_imm_check()
 uint64_t reg_imm_check()
 {
   get_symbol();
-  print("aufruf");
   if(is_register())
   {
       get_symbol();
@@ -3581,7 +3580,6 @@ uint64_t reg_imm_check()
         get_symbol();
           if(is_hexpre())
           {
-            print("succes");
             get_symbol();
             if(symbol ==SYM_INTEGER)
             {
@@ -3590,9 +3588,11 @@ uint64_t reg_imm_check()
 
           }
 
-        }
+        }else
+          exit(EXITCODE_PARSERERROR);
 
-  }
+  }else
+    exit(EXITCODE_PARSERERROR);
 }
 
 uint64_t jal_check()
@@ -3623,8 +3623,12 @@ uint64_t jal_check()
                 {
 
                 }
-              }
-            }
+
+
+              }else
+                exit(EXITCODE_PARSERERROR);
+            }else
+              exit(EXITCODE_PARSERERROR);
           }
           else
           if(symbol == SYM_MINUS)
@@ -3645,8 +3649,74 @@ uint64_t jal_check()
                   {
 
                   }
-                }else
-                  exit(EXITCODE_PARSERERROR);
+                }
+              }else
+                exit(EXITCODE_PARSERERROR);
+            }else
+              exit(EXITCODE_PARSERERROR);
+          }else
+            exit(EXITCODE_PARSERERROR);
+        }else
+          exit(EXITCODE_PARSERERROR);
+
+  }else
+    exit(EXITCODE_PARSERERROR);
+}
+
+uint64_t jalr_check()
+{
+  get_symbol();
+
+  if(is_register())
+  {
+
+      get_character();
+      if(character == ',')
+      {
+        get_symbol();
+        get_symbol();
+          if(symbol == SYM_INTEGER)
+          {
+
+            get_symbol();
+            if(symbol==SYM_LPARENTHESIS)
+            {
+
+              if(is_hexpre())
+              {
+                get_symbol();
+                get_symbol();
+                get_symbol();
+                if(symbol==SYM_RPARENTHESIS)
+                {
+
+                }
+
+
+              }
+            }else
+              exit(EXITCODE_PARSERERROR);
+          }
+          else
+          if(symbol == SYM_MINUS)
+          {
+            get_symbol();
+            if(symbol == SYM_INTEGER)
+            {
+              get_symbol();
+              if(symbol==SYM_LPARENTHESIS)
+              {
+
+                if(is_hexpre())
+                {
+                  get_symbol();
+                  get_symbol();
+                  get_symbol();
+                  if(symbol==SYM_RPARENTHESIS)
+                  {
+
+                  }
+                }
               }else
                 exit(EXITCODE_PARSERERROR);
             }else
@@ -3676,13 +3746,9 @@ uint64_t riscu_parse()                //TODOL:can check for :,$ etc. single symo
     else
       get_symbol();
 
-
-
-
-
       if(symbol == SYM_COLON)
       {
-        print("/");
+
         get_symbol();
 
         if(symbol == SYM_DOT)
@@ -3691,7 +3757,7 @@ uint64_t riscu_parse()                //TODOL:can check for :,$ etc. single symo
         }
                 if(look_for_instruction())
                 {
-                  print("+");
+
 
                   if(symbol == SYM_LUI)
                       {
@@ -3753,7 +3819,7 @@ uint64_t riscu_parse()                //TODOL:can check for :,$ etc. single symo
 
                       if(symbol == SYM_JALR)
                       {
-
+                        jalr_check();
                       }
 
                       if(symbol == SYM_ECALL)
@@ -3768,16 +3834,15 @@ uint64_t riscu_parse()                //TODOL:can check for :,$ etc. single symo
                       }
 
                       if(symbol == SYM_QUAD)
-                      {}
+                      {
+
+                      }
 
                 }
                 else
                   exit(EXITCODE_PARSERERROR);
 
-
-
           }
-
    }
 
   print_instruction_counters();
@@ -10509,7 +10574,93 @@ uint64_t babysat(uint64_t depth) {
 // -----------------------------------------------------------------
 // ----------------------- RISCU PARSER ----------------------------
 // -----------------------------------------------------------------
+void riscu_find_next_character(uint64_t new_line) {
+  uint64_t in_comment;
 
+  // assuming we are not in a comment
+  in_comment = 0;
+
+  // read and discard all whitespace and comments until a character is found
+  // that is not whitespace and does not occur in a comment, or the file ends
+  while (1) {
+    if (in_comment) {
+      get_character();
+
+      if (is_character_new_line())
+        // comments end with new line
+        in_comment = 0;
+      else if (character == CHAR_EOF)
+        return;
+      else
+        // count the characters in comments as ignored characters
+        // line feed and carriage return are counted below
+        number_of_ignored_characters = number_of_ignored_characters + 1;
+    } else if (new_line) {
+      new_line = 0;
+
+      if (character == 'c') {
+        // 'c' at beginning of a line begins a comment
+        in_comment = 1;
+
+        // count the number of comments
+        number_of_comments = number_of_comments + 1;
+      }
+    } else if (is_character_whitespace()) {
+      if (is_character_new_line())
+        new_line = 1;
+      else
+        new_line = 0;
+
+      // count whitespace as ignored characters
+      number_of_ignored_characters = number_of_ignored_characters + 1;
+
+      get_character();
+    } else                                                                          //TODOL whitespace
+      // character found that is not whitespace and not occurring in a comment
+      return;
+  }
+}
+
+void riscu_get_symbol() {
+  riscu_find_next_character(0);
+
+  get_symbol();
+}
+
+uint64_t riscu_number() {
+  uint64_t number;
+
+  if (symbol == SYM_INTEGER) {
+    number = literal;
+
+    dimacs_get_symbol();
+
+    return number;
+  } else
+    syntax_error_symbol(SYM_INTEGER);
+    if (symbol == SYM_HEXADECIMAL) {
+      number = literal;
+
+      dimacs_get_symbol();
+
+      return number;
+    }
+  exit(EXITCODE_PARSERERROR);
+}
+
+void riscu_instruction(uint64_t* instruction) {
+  if (look_for_instruction()) {
+    if (string_compare(identifier, instruction)) {
+      riscu_get_symbol();
+
+      return;
+    } else
+      syntax_error_identifier(instruction);
+  } else
+    syntax_error_symbol(SYM_IDENTIFIER);
+
+  exit(EXITCODE_PARSERERROR);
+}
 
 
 // -----------------------------------------------------------------
