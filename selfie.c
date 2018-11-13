@@ -284,10 +284,6 @@ void reset_library() {
 // -----------------------------------------------------------------
 // *~*~ *~*~ *~*~ *~*~ *~*~ *~*~ *~*~ *~*~ *~*~ *~*~ *~*~ *~*~ *~*~
 
-void init_myscanner();
-
-
-
 // -----------------------------------------------------------------
 // ---------------------------- SCANNER ----------------------------
 // -----------------------------------------------------------------
@@ -589,6 +585,10 @@ void reset_symbol_tables() {
 // ---------------------------- PARSER -----------------------------
 // -----------------------------------------------------------------
 uint64_t is_not_eof();
+
+void set_register(uint64_t reg);
+
+void reset_register();
 //-----------
 void reset_parser();
 
@@ -739,7 +739,7 @@ uint64_t* REGISTERS; // strings representing registers
 void init_register() {
   REGISTERS = smalloc(NUMBEROFREGISTERS * SIZEOFUINT64STAR);
 
-  *(REGISTERS + REG_ZR)  = (uint64_t) "$zero";
+  *(REGISTERS + REG_ZR)  = (uint64_t) "$zero";                      //TODOL use instead of char check function
   *(REGISTERS + REG_RA)  = (uint64_t) "$ra";
   *(REGISTERS + REG_SP)  = (uint64_t) "$sp";
   *(REGISTERS + REG_GP)  = (uint64_t) "$gp";
@@ -810,7 +810,7 @@ void     decode_u_format();
 
 // ------------------------ GLOBAL CONSTANTS -----------------------
 
-// opcodes
+// opcodes                                                                                //TODOL codes for instructions
 uint64_t OP_LD     = 3;   // 0000011, I format (LD)
 uint64_t OP_IMM    = 19;  // 0010011, I format (ADDI, NOP)
 uint64_t OP_SD     = 35;  // 0100011, S format (SD)
@@ -3149,6 +3149,11 @@ uint64_t report_undefined_procedures() {
 // -----------------------------------------------------------------
 // ---------------------------- MYPARSER -----------------------------
 // -----------------------------------------------------------------
+uint64_t reg1 = 0;
+uint64_t reg2 = 0;
+uint64_t reg3 = 0;
+uint64_t immediate = 0;
+
 uint64_t is_not_eof() {
   if (symbol == SYM_EOF)
     return 0;
@@ -3310,32 +3315,68 @@ uint64_t is_register()
 
       get_character();
       if(character == 'a')
+      {
+        set_register(REG_RA);
         return 1;
+      }
+
     }
     else
     if(character=='s')
     {
       get_character();
       if(character== 'p')
+      {
+        set_register(REG_SP);
         return 1;
-      else if((character == '1'))   //11 und 10
-            return 1;
+      }
+
+      else if((character == '1'))
+            {
+              set_register(REG_S1);
+              return 1;
+            }
+
       else if((character == '2'))
-            return 1;
+            {
+              set_register(REG_S2);
+              return 1;
+            }
       else if((character == '3'))
-            return 1;
+            {
+              set_register(REG_S3);
+              return 1;
+            }
       else if((character == '4'))
-            return 1;
+            {
+              set_register(REG_S4);
+              return 1;
+            }
       else if((character == '5'))
-            return 1;
+              {
+                set_register(REG_S5);
+                return 1;
+              }
       else if((character == '6'))
-            return 1;
+            {
+              set_register(REG_S6);
+              return 1;
+            }
       else if((character == '7'))
-            return 1;
+            {
+              set_register(REG_S7);
+              return 1;
+            }
       else if((character == '8'))
-            return 1;
+            {
+              set_register(REG_S8);
+              return 1;
+            }
       else if((character == '9'))
-            return 1;
+            {
+              set_register(REG_S9);
+              return 1;
+            }
 
     }
     else
@@ -3343,7 +3384,10 @@ uint64_t is_register()
     {
       get_character();
       if(character== 'p')
-        return 1;
+        {
+          set_register(REG_GP);
+          return 1;
+        }
     }
     else
     if(character=='t')
@@ -3351,51 +3395,99 @@ uint64_t is_register()
       get_character();
       if(character == 'p' )
       {
-
-        return 1;
+          set_register(REG_TP);
+          return 1;
       }
       else if(character == '0')
-              return 1;
+              {
+                set_register(REG_T0);
+                return 1;
+              }
       else if(character == '1')
-              return 1;
+              {
+                set_register(REG_T1);
+                return 1;
+              }
       else if(character == '2')
-              return 1;
+              {
+                set_register(REG_T2);
+                return 1;
+              }
       else if(character == '3')
-              return 1;
+              {
+                set_register(REG_T3);
+                return 1;
+              }
       else if(character == '4')
+            {
+              set_register(REG_T4);
               return 1;
+            }
       else if(character == '5')
-              return 1;
+              {
+                set_register(REG_T5);
+                return 1;
+              }
       else if(character == '6')
-              return 1;
+              {
+                set_register(REG_T6);
+                return 1;
+              }
     }
     else
     if(character=='f')
     {
       get_character();
       if(character== 'p' )
-        return 1;
+        {
+          set_register(REG_FP);
+          return 1;
+        }
     }
     else
     if(character=='a')
     {
       get_character();
       if(character == '0')
-        return 1;
+        {
+          set_register(REG_A0);
+          return 1;
+        }
       else if(character == '1')
-        return 1;
+        {
+          set_register(REG_A1);
+          return 1;
+        }
       else if(character == '2')
-        return 1;
+        {
+          set_register(REG_A2);
+          return 1;
+        }
       else if(character == '3')
-        return 1;
+        {
+          set_register(REG_A3);
+          return 1;
+        }
       else if(character == '4')
-        return 1;
+        {
+          set_register(REG_A4);
+          return 1;
+        }
       else if(character == '5')
-        return 1;
+        {
+          set_register(REG_A5);
+          return 1;
+        }
       else if(character == '6')
-        return 1;
+        {
+          set_register(REG_A6);
+          return 1;
+        }
       else if(character == '7')
-        return 1;
+        {
+          set_register(REG_A7);
+          return 1;
+        }
     }
     else
     if(character=='z')
@@ -3410,12 +3502,11 @@ uint64_t is_register()
           get_character();
           if(character == 'o' )
           {
-
+            set_register(REG_ZR);
             return 1;
           }
         }
       }
-
     }else
       return 0;
 
@@ -3428,8 +3519,6 @@ uint64_t three_register_check()
   ic_add = ic_add + 1;
   if(is_register())
   {
-
-
     get_character();
     if(character == ',')
     {
@@ -3464,6 +3553,7 @@ uint64_t ld_sd_check()
       get_symbol();
       if(symbol == SYM_INTEGER)
       {
+        immediate = literal;
         get_symbol();
         if(symbol == SYM_LPARENTHESIS)
         {
@@ -3474,7 +3564,7 @@ uint64_t ld_sd_check()
             get_symbol();
             if(symbol == SYM_RPARENTHESIS)
             {
-              //print("correct LD/SD");
+
             }
             else
              exit(EXITCODE_PARSERERROR);
@@ -3487,6 +3577,7 @@ uint64_t ld_sd_check()
             get_symbol();
             if(symbol == SYM_INTEGER)
             {
+              immediate = -literal;
               get_symbol();
               if(symbol == SYM_LPARENTHESIS)
               {
@@ -3497,7 +3588,7 @@ uint64_t ld_sd_check()
                   get_symbol();
                   if(symbol == SYM_RPARENTHESIS)
                   {
-                    //print("correct LD/SD");
+
                   }else
                    exit(EXITCODE_PARSERERROR);
                 }else
@@ -3532,9 +3623,11 @@ uint64_t reg_reg_imm_check()
           {
             get_symbol();
             get_symbol();
+
             if(symbol == SYM_INTEGER)
             {
 
+              immediate = literal;
 
             }
             else
@@ -3544,6 +3637,7 @@ uint64_t reg_reg_imm_check()
 
               if(symbol == SYM_INTEGER)
               {
+                immediate = -literal;
 
 
               }
@@ -3576,14 +3670,16 @@ uint64_t reg_imm_check()
       if(symbol == SYM_COMMA)
       {
 
-        get_symbol();
-        get_symbol();
           if(is_hexpre())
           {
+
             get_symbol();
+            get_symbol();
+
             if(symbol ==SYM_INTEGER)
             {
 
+              immediate = literal;
             }
 
           }
@@ -3609,7 +3705,7 @@ uint64_t jal_check()
         get_symbol();
           if(symbol == SYM_INTEGER)
           {
-
+            immediate = literal;
             get_symbol();
             if(symbol==SYM_LSQUAREBRACKET)
             {
@@ -3636,6 +3732,7 @@ uint64_t jal_check()
             get_symbol();
             if(symbol == SYM_INTEGER)
             {
+              immediate = -literal;
               get_symbol();
               if(symbol==SYM_LSQUAREBRACKET)
               {
@@ -3677,21 +3774,14 @@ uint64_t jalr_check()
         get_symbol();
           if(symbol == SYM_INTEGER)
           {
-
+            immediate = literal;
             get_symbol();
             if(symbol==SYM_LPARENTHESIS)
             {
 
-              if(is_hexpre())
+              get_symbol();
+              if(is_register())
               {
-                get_symbol();
-                get_symbol();
-                get_symbol();
-                if(symbol==SYM_RPARENTHESIS)
-                {
-
-                }
-
 
               }
             }else
@@ -3703,17 +3793,13 @@ uint64_t jalr_check()
             get_symbol();
             if(symbol == SYM_INTEGER)
             {
+              immediate = -literal;
               get_symbol();
               if(symbol==SYM_LPARENTHESIS)
               {
-
-                if(is_hexpre())
-                {
-                  get_symbol();
-                  get_symbol();
-                  get_symbol();
-                  if(symbol==SYM_RPARENTHESIS)
+                  if(is_register())
                   {
+
 
                   }
                 }
@@ -3726,18 +3812,48 @@ uint64_t jalr_check()
         }else
           exit(EXITCODE_PARSERERROR);
 
-  }else
-    exit(EXITCODE_PARSERERROR);
+
+}
+
+
+
+void set_register(uint64_t reg)
+{
+  if(reg1 != 0)
+  {
+    if(reg2 != 0)
+    {
+      if(reg3 != 0)
+      {
+
+      }
+      else
+        reg3 = reg;
+    }
+    else
+      reg2 = reg;
+  }
+  else
+    reg1 = reg;
+
+}
+
+void reset_register()
+{
+  reg1 = 0;
+  reg2 = 0;
+  reg3 = 0;
 }
 
 uint64_t riscu_parse()                //TODOL:can check for :,$ etc. single symols, but not instructions. check while if etc
 {
-  uint64_t reg1;
-  uint64_t reg2;
-  uint64_t reg3;
-  uint64_t immediate;
 
+  source_name = (uint64_t*) "library";
 
+  binary_name = source_name;
+  // allocate memory for storing binary
+  binary       = smalloc(MAX_BINARY_LENGTH);
+  binary_length = 0;
 
   while(symbol != SYM_EOF)
   {
@@ -3758,79 +3874,111 @@ uint64_t riscu_parse()                //TODOL:can check for :,$ etc. single symo
                 if(look_for_instruction())
                 {
 
-
                   if(symbol == SYM_LUI)
                       {
+
                         reg_imm_check();
+                        emit_lui(reg1,immediate);
+                        reset_register();
+                        immediate = 0;
                       }
-                      if(symbol == SYM_ADDI)                              //works
+                      if(symbol == SYM_ADDI)
                       {
                         reg_reg_imm_check();
+                        emit_addi(reg1,reg2,immediate);
+                        reset_register();
+                        immediate = 0;
                       }
 
                       if(symbol == SYM_ADD)
                       {
                         three_register_check();
+                        emit_add(reg1,reg2,reg3);
+                        reset_register();
                       }
 
                       if(symbol == SYM_SUB)
                       {
                         three_register_check();
+                        emit_sub(reg1,reg2,reg3);
+                        reset_register();
                       }
 
                       if(symbol == SYM_MUL)
                       {
                         three_register_check();
+                        emit_mul(reg1,reg2,reg3);
+                        reset_register();
                       }
 
                       if(symbol == SYM_DIVU)
                       {
                         three_register_check();
+                        emit_divu(reg1,reg2,reg3);
+                        reset_register();
                       }
 
                       if(symbol == SYM_REMU)
                       {
                         three_register_check();
+                        emit_remu(reg1,reg2,reg3);
+                        reset_register();
                       }
 
                       if(symbol == SYM_SLTU)
                       {
                         three_register_check();
+                        emit_sltu(reg1,reg2,reg3);
+                        reset_register();
                       }
 
                       if(symbol == SYM_LD)
                       {
                        ld_sd_check();
+                       emit_ld(reg1,reg2,immediate);
+                       reset_register();
+                       immediate = 0;
                       }
 
                       if(symbol == SYM_SD)
                       {
                         ld_sd_check();
+                        emit_sd(reg1,reg2,immediate);
+                        reset_register();
+                        immediate = 0;
                       }
                      if(symbol == SYM_BEQ)
                       {
                         reg_reg_imm_check();
+                        emit_beq(reg1,reg2,immediate);
+                        reset_register();
+                        immediate = 0;
                       }
 
                       if(symbol == SYM_JAL)
                       {
                           jal_check();
+                          emit_jal(reg1,immediate);
+                          reset_register();
+                          immediate = 0;
                       }
 
                       if(symbol == SYM_JALR)
                       {
                         jalr_check();
+                        emit_jalr(reg1,reg2,immediate);
+                        reset_register();
+                        immediate = 0;
                       }
 
                       if(symbol == SYM_ECALL)
-                      {
-
-
+                      {                  
+                        emit_ecall();
                       }
 
                       if(symbol == SYM_NOP)
                       {
-
+                        emit_nop();
                       }
 
                       if(symbol == SYM_QUAD)
@@ -3845,7 +3993,6 @@ uint64_t riscu_parse()                //TODOL:can check for :,$ etc. single symo
           }
    }
 
-  print_instruction_counters();
 }
 // -----------------------------------------------------------------
 // ---------------------------- PARSER -----------------------------
@@ -6139,10 +6286,11 @@ void store_data(uint64_t baddr, uint64_t data) {
 }
 
 void emit_instruction(uint64_t instruction) {
+
   store_instruction(binary_length, instruction);
 
-  if (*(source_line_number + binary_length / INSTRUCTIONSIZE) == 0)
-    *(source_line_number + binary_length / INSTRUCTIONSIZE) = line_number;
+//  if (*(source_line_number + binary_length / INSTRUCTIONSIZE) == 0)           //Leads to segmentation fault with the -a option
+//    *(source_line_number + binary_length / INSTRUCTIONSIZE) = line_number;
 
   binary_length = binary_length + INSTRUCTIONSIZE;
 }
@@ -9483,11 +9631,7 @@ void selfie_assemble()                    //TODOL: print zum debuggen works, ass
 
   assembly_name = get_argument();
 
-//  if (code_length == 0) {
-//    printf2((uint64_t*) "%s: nothing to assemble to output file %s\n", selfie_name, assembly_name);
 
-//    return;
-//  }
 
   // assert: assembly_name is mapped and not longer than MAX_FILENAME_LENGTH
 
@@ -9507,9 +9651,14 @@ void selfie_assemble()                    //TODOL: print zum debuggen works, ass
 
     exit(EXITCODE_IOERROR);
   }
+  code_length = binary_length;
 
   output_name = assembly_name;
   output_fd   = assembly_fd;
+
+  //emit_bootstrapping();
+
+
 
 }
 
