@@ -1,2 +1,2 @@
-Grade: 3
-Test mit fehlender adresse wird nicht bestanden, da erst nach jedem : geparset wird, da 0x nicht als symbol erkannt wird und der umweg über das character checken auch Probleme verursacht hat. Die check Funktionen für die  Instruktionen gehen nach dem riscu.md file vor, bei einem falschen zeichen wird exit mit parsererror gecallt.
+Grade 4:
+Beim Grader wird die Datei selfie2.s nicht erzeugt, weshalb der Test nicht bestanden wird.Führt man jedoch die beiden commands ./selfie -c /root/selfie-master2/manuscript/code/hello-world.c -s selfie1.s , ./selfie -a selfie1.s -s selfie2.s so werden beide selfie.s Files erzeugt welche großteils übereinstimmen. Die geparsten Register und Integer values werden in den Variablen reg1,reg2,reg3 und immediate abgespeichert und dann je nachdem welche Instruktion man hat in die dazu zugehörige emit Funktion eingesetzt.
