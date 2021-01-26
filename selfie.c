@@ -11098,7 +11098,7 @@ void set_argument(uint64_t* argv) {
 }
 
 void print_usage() {
-  printf3((uint64_t*) "%s: usage: selfie { %s } [ %s ]\n",
+  printf3((uint64_t*) "%s: usage:Lukas selfie { %s } [ %s ]\n",
     selfie_name,
       (uint64_t*) "-c { source } | -o binary | [ -s | -S ] assembly | -l binary | -sat dimacs | -a selfie.s",
       (uint64_t*) "( -m | -d | -r | -n | -y | -min | -mob ) 0-64 ...");
